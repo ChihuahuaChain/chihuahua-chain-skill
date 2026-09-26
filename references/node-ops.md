@@ -21,8 +21,7 @@ already sync a full node — see
 
 You need a **fully synced** node (`catching_up: false`) and an account funded with
 HUAHUA to self-delegate. To get synced in minutes rather than from genesis, use
-Polkachu's [state-sync](https://polkachu.com/state_sync/chihuahua) or
-[snapshot](https://polkachu.com/tendermint_snapshots/chihuahua) (see
+state-sync or a validator's snapshot (see
 [network.md → fast sync](network.md#running-a-full-node)). Then submit a
 `create-validator` tx. Modern Cosmos SDK takes a JSON file:
 
@@ -74,9 +73,10 @@ cp $(which chihuahuad) $DAEMON_HOME/cosmovisor/genesis/bin/
 cosmovisor run start        # run this under systemd instead of `chihuahuad start`
 ```
 
-Watch for upgrades via the chain's governance proposals (any explorer in
-[network.md](network.md#explorers)) or [Polkachu's chain-upgrades tracker](https://polkachu.com/chain_upgrades),
-which lists the upgrade name and target height. Pre-stage the matching binary built
+Watch for upgrades via the chain's governance proposals on
+[explorer.chihuahua.wtf/proposals](https://explorer.chihuahua.wtf/proposals) (or any
+explorer in [network.md](network.md#explorers)): a software-upgrade proposal carries
+the upgrade name and target height. Pre-stage the matching binary built
 from the [right release](https://github.com/ChihuahuaChain/chihuahua/releases) (the
 chain is on **v9.0.7** as of this writing; coordinated version bumps like this are
 exactly what Cosmovisor handles). Set
@@ -113,7 +113,7 @@ its `config.toml` as a chain entry:
 [[chains]]
 id = 'chihuahua-1'
 rpc_addr = 'https://rpc.chihuahua.wtf'
-grpc_addr = 'https://chihuahua-grpc.publicnode.com:443'
+grpc_addr = 'https://grpc.chihuahua.validatus.com:443'   # or your own node's :9090
 event_source = { mode = 'push', url = 'wss://rpc.chihuahua.wtf/websocket', batch_delay = '500ms' }
 account_prefix = 'chihuahua'
 key_name = 'relayer'
@@ -131,9 +131,10 @@ existing channel or create a new connection/channel.
 
 > **Check for an existing channel first.** Most major paths (Chihuahua ↔ Osmosis,
 > ↔ the Hub) already have a canonical channel — relaying that one is far cheaper than
-> creating a duplicate that fragments liquidity. Look up the live channel IDs on the
-> [Mintscan IBC tab](https://www.mintscan.io/chihuahua) before running
-> `create channel`, and prefer relaying the established channel.
+> creating a duplicate that fragments liquidity. Look up the live channel IDs
+> (`chihuahuad query ibc channel channels`, see
+> [network.md](network.md#explorers)) before running `create channel`, and prefer
+> relaying the established channel.
 
 ```bash
 hermes health-check

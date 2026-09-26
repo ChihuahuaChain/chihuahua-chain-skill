@@ -9,13 +9,14 @@
 
 export CHAIN_ID="${CHAIN_ID:-chihuahua-1}"
 export DENOM="${DENOM:-uhuahua}"
-export DISPLAY="${DISPLAY:-HUAHUA}"
+# not DISPLAY: that name belongs to X11, and overriding it breaks GUI apps
+export DISPLAY_DENOM="${DISPLAY_DENOM:-HUAHUA}"
 export DECIMALS="${DECIMALS:-6}"
 
 export RPC="${RPC:-https://rpc.chihuahua.wtf}"
 export WS="${WS:-wss://rpc.chihuahua.wtf/websocket}"
 export REST="${REST:-https://api.chihuahua.wtf}"
-export GRPC="${GRPC:-chihuahua-grpc.polkachu.com:12990}"
+export GRPC="${GRPC:-grpc.chihuahua.validatus.com:443}"
 
 export GAS_PRICES="${GAS_PRICES:-1250uhuahua}"
 export GAS_ADJUSTMENT="${GAS_ADJUSTMENT:-1.4}"

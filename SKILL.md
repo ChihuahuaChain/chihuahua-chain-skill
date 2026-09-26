@@ -27,7 +27,7 @@ This skill bundles the chain's live network config plus deep-dive guides for eac
 build path. **Start here, then read the one reference file that matches the task.**
 Don't load every reference — progressive disclosure keeps context lean.
 
-## Network quick reference (verify against the registry — endpoints drift)
+## Network quick reference (endpoints drift — verify before trusting one)
 
 | Field | Value |
 |-------|-------|
@@ -41,11 +41,13 @@ Don't load every reference — progressive disclosure keeps context lean.
 | Primary RPC | `https://rpc.chihuahua.wtf` |
 | Primary REST/LCD | `https://api.chihuahua.wtf` |
 | WebSocket | `wss://rpc.chihuahua.wtf/websocket` |
+| Explorer | https://explorer.chihuahua.wtf (`/tx/<HASH>`, `/account/<addr>`, `/proposals`) |
 | Gas price (uhuahua/gas) | chain min `100`, low `500`, avg `1250`, high `2000` |
 | Recommended fee | `--gas auto --gas-adjustment 1.4 --gas-prices 1250uhuahua` |
 
-The single source of truth for endpoints, versions, and gas is the **cosmos
-chain-registry** (`chihuahua/chain.json`). Public RPC/REST/gRPC nodes come and go,
+The `chihuahua.wtf` endpoints are run by the chain itself; the **cosmos
+chain-registry** (`chihuahua/chain.json`) lists the rest, but it lags: several
+providers there no longer serve Chihuahua. Public RPC/REST/gRPC nodes come and go,
 so if a call fails with a connection error, treat it as a dead endpoint, not a bug
 in your code — fall back to another node from the list in
 [references/network.md](references/network.md). Always confirm the chain ID a node

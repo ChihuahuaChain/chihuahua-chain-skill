@@ -56,6 +56,7 @@ huahua woof                       # 🐕
 | CLI | `chihuahuad` |
 | Primary RPC / REST | `https://rpc.chihuahua.wtf` / `https://api.chihuahua.wtf` |
 | WebSocket | `wss://rpc.chihuahua.wtf/websocket` |
+| Explorer | `https://explorer.chihuahua.wtf` |
 | Gas price | `1250uhuahua` average (chain minimum `100`, low 500, high 2000) — **not** the generic `0.025` |
 | Current binary | `v9.0.7` (Go 1.23.9) — verify latest before syncing a node |
 | Source | https://github.com/ChihuahuaChain/chihuahua |

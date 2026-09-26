@@ -1,9 +1,10 @@
 # Chihuahua Network Reference
 
 Everything about connecting to `chihuahua-1`: endpoints, denoms, gas, the CLI, and
-running a node. Data sourced from the cosmos chain-registry
-(`chihuahua/chain.json`, `chihuahua/assetlist.json`). Endpoints are operated by
-independent validators and rotate often — if one is down, move to the next.
+running a node. Endpoints were checked live in September 2026; the cosmos
+chain-registry (`chihuahua/chain.json`) still lists several providers that have since
+dropped the chain. Endpoints are operated by independent validators and rotate — if
+one is down, move to the next, and prefer the `chihuahua.wtf` ones.
 
 ## Table of contents
 - [Chain identity](#chain-identity)
@@ -73,17 +74,8 @@ CometBFT/Tendermint RPC (port surface for `--node`, status, blocks, tx broadcast
 
 ```
 https://rpc.chihuahua.wtf
-https://chihuahua-rpc.polkachu.com
-https://chihuahua-rpc.publicnode.com:443
-https://rpc.lavenderfive.com:443/chihuahua
-https://chihuahua-rpc.chainroot.io
-https://rpc-chihuahua-ia.cosmosia.notional.ventures
-https://chihuahua-mainnet-rpc.autostake.com:443
-https://rpc.huahua.bh.rocks
 https://chihuahua-rpc.kleomedes.network
 https://rpc.chihuahua.validatus.com
-https://chihuahua.rpc.nodeshub.online:443
-https://chihua.rpc.m.stavr.tech
 https://chihuahua.api.pocket.network
 ```
 
@@ -99,16 +91,7 @@ Cosmos SDK REST API (for HTTP/JSON queries, e.g. `/cosmos/bank/v1beta1/balances/
 
 ```
 https://api.chihuahua.wtf
-https://chihuahua-api.polkachu.com
-https://chihuahua-rest.publicnode.com
-https://rest.lavenderfive.com:443/chihuahua
-https://chihuahua-api.chainroot.io
-https://api-chihuahua-ia.cosmosia.notional.ventures
-https://chihuahua-mainnet-lcd.autostake.com:443
 https://chihuahua-api.kleomedes.network
-https://api.chihuahua.validatus.com
-https://chihuahua.api.nodeshub.online:443
-https://chihua.api.m.stavr.tech
 ```
 
 Example — query a balance over REST:
@@ -119,19 +102,14 @@ curl -s "https://api.chihuahua.wtf/cosmos/bank/v1beta1/balances/chihuahua1yourad
 
 ## gRPC endpoints
 
-For CosmJS/`grpc`/protobuf clients and high-throughput indexing:
+For `grpc`/protobuf clients and high-throughput indexing (CosmJS does not need gRPC:
+it talks to the RPC endpoints above). Public gRPC for Chihuahua is scarce — most
+providers in the chain-registry no longer serve it, and this was the only one that
+answered in September 2026. Check it before relying on it, and run your own node
+(`:9090`) for anything serious:
 
 ```
-chihuahua-grpc.polkachu.com:12990
-chihuahua.lavenderfive.com:443
-grpc-chihuahua-ia.cosmosia.notional.ventures:443
-chihuahua-grpc.publicnode.com:443
-chihuahua-mainnet-grpc.autostake.com:443
-grpc-chihuahua.cosmos-spaces.cloud:2290
 grpc.chihuahua.validatus.com:443
-chihuahua.grpc.nodeshub.online
-chihuahua-grpc.chainroot.io:443
-chihua.grpc.m.stavr.tech:108
 ```
 
 ## WebSocket (events & subscriptions)
@@ -142,7 +120,7 @@ the scheme to `wss://`:
 
 ```
 wss://rpc.chihuahua.wtf/websocket
-wss://chihuahua-rpc.publicnode.com:443/websocket
+wss://chihuahua-rpc.kleomedes.network/websocket
 ```
 
 Subscribe to new blocks (raw protocol — most clients wrap this for you):
@@ -162,8 +140,7 @@ are best-effort and can drop under load — for guaranteed delivery, poll
 ## Explorers
 
 ```
-https://www.mintscan.io/chihuahua
-https://ping.pub/chihuahua
+https://explorer.chihuahua.wtf
 https://atomscan.com/chihuahua
 https://explorer.stavr.tech/Chihua-Mainnet
 https://staking-explorer.com/explorer/chihuahua
@@ -171,23 +148,34 @@ https://ezstaking.app/chihuahua
 https://explorer.nodeshub.online/chihuahua/
 ```
 
-Use an explorer to confirm a tx hash landed (`/txs/<HASH>` or the search box) and to
-read a contract's address, code ID, and instantiation history.
+[explorer.chihuahua.wtf](https://explorer.chihuahua.wtf) is the chain's own explorer:
+it reads straight from a full node, so it never lags the chain. Its URLs are stable
+and easy to hand to (or build for) a human:
 
-[Mintscan](https://www.mintscan.io/chihuahua) is the most feature-complete and the one
-to reach for when a *build* task needs on-chain facts a human has to look up by eye:
+| What | URL |
+|------|-----|
+| Transaction | `https://explorer.chihuahua.wtf/tx/<HASH>` |
+| Block | `https://explorer.chihuahua.wtf/block/<HEIGHT>` |
+| Account or contract | `https://explorer.chihuahua.wtf/account/<chihuahua1...>` (contracts show their label) |
+| Validator | `https://explorer.chihuahua.wtf/validator/<chihuahuavaloper1...>` |
+| Proposal | `https://explorer.chihuahua.wtf/proposal/<ID>` |
+| Assets (native, IBC, tokenfactory) | `https://explorer.chihuahua.wtf/assets` |
+| Chain parameters | `https://explorer.chihuahua.wtf/parameters` |
 
-- **CosmWasm tab** — browse deployed code IDs and contract addresses. This is the
-  fastest way to resolve the *current* address of an ecosystem contract (Huahuaswap
-  pools, a token, an NFT collection) instead of trusting a stale value from a tutorial.
-- **IBC tab** — see which channels already exist between Chihuahua and another chain
-  (channel IDs, client/connection, relayer status). Check this before standing up a
-  relayer, and use it to resolve which `ibc/<HASH>` voucher a transferred asset became.
-- **Proposals tab** — track upgrade proposals (the version + height your node must be
-  on) and any wasm-permission governance.
+Use it to confirm a tx hash landed, to check an address or contract, to follow
+upgrade proposals (the version + height your node must be on) and wasm-permission
+governance, and to see which `ibc/<HASH>` voucher a transferred asset became.
 
-It's a human-facing surface — the agent can't click it, but it's where you (or a
-teammate) look up a code ID, contract address, or channel ID to hand to the agent.
+Two things it doesn't have a page for, and the CLI answers directly:
+
+```bash
+# code IDs and the contracts instantiated from one (resolve a *current* address)
+chihuahuad query wasm list-code --node "$NODE"
+chihuahuad query wasm list-contract-by-code <CODE_ID> --node "$NODE"
+# IBC channels (channel IDs, counterparty, state) before standing up a relayer
+chihuahuad query ibc channel channels --node "$NODE" --output json \
+  | jq '.channels[] | {channel_id, state, counterparty}'
+```
 
 ## The chihuahuad CLI
 
@@ -312,10 +300,9 @@ chihuahuad init <moniker> --chain-id chihuahua-1
 curl -s https://raw.githubusercontent.com/ChihuahuaChain/chihuahua/main/mainnet/genesis.json \
   -o ~/.chihuahuad/config/genesis.json
 # set minimum-gas-prices = "100uhuahua" in app.toml (the chain minimum)
-# set seeds in config.toml:
-#   77cbb35d1df17f48a42e9f157f12f55b691e9f5e@seeds.goldenratiostaking.net:1620
-#   4936e377b4d4f17048f8961838a5035a4d21240c@chihuahua-seed-01.mercury-nodes.net:29540
-# (persistent_peers are listed in the repo's mainnet docs — confirm current ones there)
+# set seeds / persistent_peers in config.toml: start from the repo's mainnet/seeds.txt
+# and mainnet/peers, and replace any that don't answer (the older seed hosts are often
+# offline) with live peers taken from a synced node's /net_info
 chihuahuad start
 ```
 
@@ -324,24 +311,19 @@ node guide in the [chihuahua repo](https://github.com/ChihuahuaChain/chihuahua) 
 its `mainnet/` directory. Prerequisites for a Ubuntu/Debian box: `make`, `gcc`, `git`,
 `jq`, `chrony`, and Go 1.23.9.
 
-For a fast sync, don't run from genesis (slow) — use a **state-sync** or a **snapshot**.
-[Polkachu](https://polkachu.com/networks/chihuahua) maintains the most complete,
-auto-updated set of Chihuahua node resources, each on its own page:
+For a fast sync, don't run from genesis (slow) — use **state-sync** from a trusted RPC
+(e.g. `https://rpc.chihuahua.wtf`: set `[statesync] enable = true`, two `rpc_servers`,
+and a recent `trust_height` / `trust_hash` taken from `/block`) or a snapshot from a
+validator that publishes one. Remember the `wasm` folder: a CosmWasm chain needs it,
+and state-sync fetches it with the snapshot.
 
-- [Installation guide](https://polkachu.com/installation/chihuahua) — Cosmovisor-based, with the version it currently tracks
-- [Snapshot](https://polkachu.com/tendermint_snapshots/chihuahua) — lz4-streamed, includes the `wasm` subfolder (needed for a CosmWasm chain)
-- [State-sync](https://polkachu.com/state_sync/chihuahua) — node syncing in ~10 minutes
-- [Live peers](https://polkachu.com/live_peers/chihuahua) / [addrbook](https://polkachu.com/addrbooks/chihuahua) / seeds — auto-updated
-- [Chain-upgrades tracker](https://polkachu.com/chain_upgrades) — upcoming upgrade names + heights
-
-> **These are exactly the values you fetch live, never hardcode.** Peers, addrbook,
-> snapshot URLs, and the tracked binary version rotate constantly — that's the whole
-> point of pointing at a maintained provider instead of pasting a peer into the skill.
-> One catch worth noting: providers can lag each other on the version (e.g. Polkachu's
-> installer may track `v9.0.6` while the repo's latest release is `v9.0.7`). Cross-check
-> the [repo releases](https://github.com/ChihuahuaChain/chihuahua/releases) and the
-> chain's active upgrade proposal, and run whatever the **current validator set** is on.
-> Lavender.Five and AutoStake publish equivalent snapshots if you want an alternative.
+> **Fetch these values live, never hardcode them.** Peers, snapshot URLs, and the
+> binary version rotate — and providers drop chains without notice (Polkachu, for
+> one, no longer serves Chihuahua). Cross-check the
+> [repo releases](https://github.com/ChihuahuaChain/chihuahua/releases) and the
+> chain's active upgrade proposal on
+> [explorer.chihuahua.wtf/proposals](https://explorer.chihuahua.wtf/proposals), and
+> run whatever the **current validator set** is on.
 
 ## Local devnet (your safe sandbox)
 

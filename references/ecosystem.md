@@ -18,9 +18,9 @@ just a contract, a DEX swap is just an `execute`, an NFT is just another contrac
 > **Addresses drift — don't hardcode them blind.** Ecosystem contract addresses
 > (DEX router, pool factory, specific pools) change as projects redeploy. Always
 > resolve the *current* address from the app's site, by querying the chain
-> (`chihuahuad query wasm list-contract-by-code <id>`), or by browsing the
-> [Mintscan CosmWasm tab](https://www.mintscan.io/chihuahua) — rather than pasting a
-> stale address from a tutorial. The patterns below are stable; the addresses are not.
+> (`chihuahuad query wasm list-contract-by-code <id>`), and checking it on
+> [explorer.chihuahua.wtf](https://explorer.chihuahua.wtf) (`/account/<address>` shows
+> the contract label) — rather than pasting a stale address from a tutorial. The patterns below are stable; the addresses are not.
 
 ## Huahuaswap — the native DEX
 
@@ -171,8 +171,6 @@ real code written for this chain rather than a generic template:
 
 ## Other DeFi venues
 
-- **White Whale** — liquidity pools and flash loans are live on Chihuahua; another
-  CosmWasm venue you can route swaps through.
 - **Osmosis** — the deepest cross-chain HUAHUA market (HUAHUA/OSMO), reached via IBC.
   See [skip-go.md → Acquiring HUAHUA](skip-go.md#acquiring-huahua-funding-a-treasury-or-faucet)
   for funding an account with HUAHUA from another chain.
