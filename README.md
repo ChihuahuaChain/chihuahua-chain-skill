@@ -28,11 +28,11 @@ After install, the agent loads the skill automatically when you work on Chihuahu
 | `SKILL.md` | Entry point: network quick-reference + path picker. Start here. |
 | `references/network.md` | RPC / REST / gRPC / WebSocket endpoints, chain ID, gas, denoms, CLI recipes, running a node, local devnet |
 | `references/smart-contracts.md` | CosmWasm lifecycle: compile → optimize → permission check → store → instantiate → execute → migrate |
-| `references/dapp-dev.md` | CosmJS, Keplr/Leap, programmatic wallet generation, sending HUAHUA, live WS subscriptions |
+| `references/dapp-dev.md` | CosmJS, Keplr/Huallet, programmatic wallet generation, sending HUAHUA, live WS subscriptions |
 | `references/skip-go.md` | Cross-chain transfers/swaps and acquiring HUAHUA via Skip Go / IBC |
 | `references/ecosystem.md` | Huahuaswap DEX, launching a meme token (tokenfactory denom or cw20), NFTs (cw721) |
 | `references/node-ops.md` | Operator path: becoming a validator (Cosmovisor, anti-slash) and running a Hermes IBC relayer |
-| `assets/chain-info.json` | Drop-in Keplr/Leap `experimentalSuggestChain` config |
+| `assets/chain-info.json` | Drop-in Keplr/Huallet `experimentalSuggestChain` config |
 | `assets/env.example` | Env vars (`CHAIN_ID`, `RPC`, `REST`, `GRPC`, `DENOM`, `GAS_PRICES`) |
 | `scripts/chihuahua-env.sh` | `source` to load network vars + a `chihuahuad` wrapper (and `huahua woof` 🐕) |
 | `scripts/install-chihuahuad.sh` | Build the `chihuahuad` CLI from source |

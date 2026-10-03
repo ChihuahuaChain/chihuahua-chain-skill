@@ -1,6 +1,6 @@
 # Building a Chihuahua dApp (CosmJS + wallets)
 
-This guide covers the frontend/app path: connecting a browser wallet (Keplr / Leap),
+This guide covers the frontend/app path: connecting a browser wallet (Keplr / Huallet),
 reading chain state, signing and broadcasting transactions, interacting with CosmWasm
 contracts, and subscribing to live events — all from JavaScript/TypeScript with
 **CosmJS**.
@@ -22,7 +22,7 @@ contracts, and subscribing to live events — all from JavaScript/TypeScript wit
 If the goal is "a working Chihuahua web app, quickly" — not learning the plumbing —
 don't wire it by hand. [create-interchain-app](https://github.com/hyperweb-io/create-interchain-app)
 (CIA, by Hyperweb / formerly Cosmology) is the create-react-app of Cosmos: one command
-scaffolds a **Next.js** app with multi-wallet connect (Keplr, Leap, Cosmostation,
+scaffolds a **Next.js** app with multi-wallet connect (Keplr, Cosmostation,
 Ledger, 20+ via [Interchain Kit](#managed-multi-wallet-connection-interchain-kit--cosmos-kit-30)),
 signing (InterchainJS), and chain/asset data pulled straight from the
 **Cosmos chain-registry**:
@@ -75,7 +75,7 @@ export const PREFIX = "chihuahua";
 
 ## Create a wallet programmatically (bots/backends/faucets)
 
-A browser dApp gets its signer from Keplr/Leap (below). But a **backend** — a faucet,
+A browser dApp gets its signer from Keplr/Huallet (below). But a **backend** — a faucet,
 a trading bot, a deploy script, an indexer that also writes — has no browser wallet.
 Generate or load a key directly with CosmJS. The Chihuahua address prefix is
 `chihuahua` and the coin type is `118`:
@@ -110,7 +110,7 @@ const client = await SigningStargateClient.connectWithSigner(RPC, loaded, {
 
 ## Add Chihuahua to the wallet (suggestChain)
 
-A user's Keplr/Leap may not know Chihuahua yet. Register it before connecting. The
+A user's Keplr/Huallet may not know Chihuahua yet. Register it before connecting. The
 full config object is in [`../assets/chain-info.json`](../assets/chain-info.json) —
 import it and pass it straight in:
 
@@ -118,14 +118,14 @@ import it and pass it straight in:
 import chainInfo from "./chain-info.json";
 
 async function ensureChain(wallet = window.keplr) {
-  if (!wallet) throw new Error("No Cosmos wallet found (install Keplr or Leap)");
+  if (!wallet) throw new Error("No Cosmos wallet found (install Huallet or Keplr)");
   // experimentalSuggestChain is a no-op if the chain is already known
   await wallet.experimentalSuggestChain(chainInfo);
 }
 ```
 
-Leap exposes the same API at `window.leap`. Both also support `window.keplr` shims,
-so writing against the Keplr interface generally works for both.
+[Huallet](https://github.com/ChihuahuaChain/huallet), Chihuahua's own wallet, exposes the same API at
+`window.huallet`, so writing against the Keplr interface works for both.
 
 ## Connect & get a signer
 
@@ -155,7 +155,7 @@ for you. [Interchain Kit](https://github.com/hyperweb-io/interchain-kit) (by Hyp
 is exactly that — a universal wallet adapter for **React and Vue**, and it's the
 successor to the widely-used **cosmos-kit** ("Cosmos Kit 3.0"). It pulls chain config
 from the chain-registry, so Chihuahua (`chihuahua`) works without a hand-written
-`suggestChain`, and it supports Keplr, Leap, Cosmostation, OKX, Ledger, WalletConnect,
+`suggestChain`, and it supports Keplr, Cosmostation, OKX, Ledger, WalletConnect,
 and more.
 
 ```bash

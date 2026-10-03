@@ -65,7 +65,7 @@ export function Bridge() {
 }
 ```
 
-The widget handles wallet connection (Keplr/Leap/MetaMask), route discovery, signing
+The widget handles wallet connection (Keplr, MetaMask and others), route discovery, signing
 each hop, and progress tracking. Pin the source or destination to `chihuahua-1` to
 make your app's bridge feel native. Check the widget's current prop names against the
 docs — the config surface changes between versions.

@@ -7,7 +7,7 @@ description: >-
   RPC/REST/gRPC/WebSocket endpoints and chain ID; gas price / "insufficient fee"
   / failed broadcasts; deploying, instantiating, executing, or querying CosmWasm
   contracts and code-upload permissions; generating a wallet, sending HUAHUA, or
-  reading balances in display vs base units; dApps with CosmJS and Keplr/Leap;
+  reading balances in display vs base units; dApps with CosmJS and Keplr/Huallet;
   launching a meme token (tokenfactory denom or cw20) or NFTs (cw721); the native
   DEX Huahuaswap; bridging or acquiring HUAHUA via IBC or Skip Go; or running a
   validator or IBC relayer. Trigger on "Chihuahua chain", "HUAHUA", "chihuahua-1",
@@ -60,14 +60,14 @@ reports (`curl -s <rpc>/status | jq -r .result.node_info.network`) equals
 |----------------|------|
 | Connect to endpoints, set env vars, run/sync a node, understand gas & denoms | [references/network.md](references/network.md) |
 | Write, compile, store, instantiate, execute, or query a **CosmWasm contract** | [references/smart-contracts.md](references/smart-contracts.md) |
-| Build a **dApp / frontend** — scaffold one fast (create-interchain-app) or wire CosmJS by hand, generate a wallet, sign txs, add the chain to Keplr/Leap | [references/dapp-dev.md](references/dapp-dev.md) |
+| Build a **dApp / frontend** — scaffold one fast (create-interchain-app) or wire CosmJS by hand, generate a wallet, sign txs, add the chain to Keplr/Huallet | [references/dapp-dev.md](references/dapp-dev.md) |
 | Move HUAHUA **cross-chain** (deposit/withdraw, swaps, IBC) or **acquire HUAHUA** with **Skip Go** | [references/skip-go.md](references/skip-go.md) |
 | Use **Huahuaswap**, launch a **meme token** (tokenfactory or cw20), mint **NFTs** (cw721) | [references/ecosystem.md](references/ecosystem.md) |
 | Run a **validator** or an **IBC relayer** (Hermes) for/to Chihuahua (operator path) | [references/node-ops.md](references/node-ops.md) |
 
 ## Bundled assets & scripts
 
-- [`assets/chain-info.json`](assets/chain-info.json) — ready-to-use Keplr/Leap
+- [`assets/chain-info.json`](assets/chain-info.json) — ready-to-use Keplr/Huallet
   `experimentalSuggestChain` config object. Drop it into a dApp to register the
   chain in the user's wallet.
 - [`assets/env.example`](assets/env.example) — environment variables (`CHAIN_ID`,
