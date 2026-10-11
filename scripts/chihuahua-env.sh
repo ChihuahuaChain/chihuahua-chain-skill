@@ -16,7 +16,7 @@ export DECIMALS="${DECIMALS:-6}"
 export RPC="${RPC:-https://rpc.chihuahua.wtf}"
 export WS="${WS:-wss://rpc.chihuahua.wtf/websocket}"
 export REST="${REST:-https://api.chihuahua.wtf}"
-export GRPC="${GRPC:-grpc.chihuahua.validatus.com:443}"
+export GRPC="${GRPC:-grpc.chihuahua.wtf:443}"
 
 export GAS_PRICES="${GAS_PRICES:-1250uhuahua}"
 export GAS_ADJUSTMENT="${GAS_ADJUSTMENT:-1.4}"

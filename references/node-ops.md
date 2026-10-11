@@ -113,7 +113,7 @@ its `config.toml` as a chain entry:
 [[chains]]
 id = 'chihuahua-1'
 rpc_addr = 'https://rpc.chihuahua.wtf'
-grpc_addr = 'https://grpc.chihuahua.validatus.com:443'   # or your own node's :9090
+grpc_addr = 'https://grpc.chihuahua.wtf:443'   # or your own node's :9090
 event_source = { mode = 'push', url = 'wss://rpc.chihuahua.wtf/websocket', batch_delay = '500ms' }
 account_prefix = 'chihuahua'
 key_name = 'relayer'

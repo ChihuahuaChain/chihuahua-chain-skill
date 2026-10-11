@@ -103,13 +103,20 @@ curl -s "https://api.chihuahua.wtf/cosmos/bank/v1beta1/balances/chihuahua1yourad
 ## gRPC endpoints
 
 For `grpc`/protobuf clients and high-throughput indexing (CosmJS does not need gRPC:
-it talks to the RPC endpoints above). Public gRPC for Chihuahua is scarce — most
-providers in the chain-registry no longer serve it, and this was the only one that
-answered in September 2026. Check it before relying on it, and run your own node
-(`:9090`) for anything serious:
+it talks to the RPC endpoints above). The chain's own endpoint is served from a full
+node over TLS on port 443; most third-party providers in the chain-registry no longer
+serve gRPC, so the second one is a fallback. Run your own node (`:9090`) for anything
+serious:
 
 ```
-grpc.chihuahua.validatus.com:443
+grpc.chihuahua.wtf:443                # primary
+grpc.chihuahua.validatus.com:443      # fallback
+```
+
+Example — latest block with [grpcurl](https://github.com/fullstorydev/grpcurl):
+
+```bash
+grpcurl grpc.chihuahua.wtf:443 cosmos.base.tendermint.v1beta1.Service/GetLatestBlock
 ```
 
 ## WebSocket (events & subscriptions)
