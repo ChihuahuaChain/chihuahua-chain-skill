@@ -1,105 +1,157 @@
-# Chihuahua Ecosystem: Huahuaswap, Tokens & NFTs
+# Chihuahua Ecosystem: dApps, Huahuaswap, Tokens & NFTs
 
-Chihuahua is a meme chain, and the most on-theme thing to build here is a **token**
-and trade it on the chain's native DEX. This guide covers the native ecosystem apps
-and the CosmWasm patterns for launching your own assets:
+Chihuahua is a meme chain, and the most on-theme things to build here are tokens and
+the apps around them. This guide covers the live ecosystem dApps, the native DEX and
+its launchpad, and how to launch and burn your own assets:
 
-- [Huahuaswap — the native DEX](#huahuaswap--the-native-dex)
-- [Launch a meme token — two paths](#launch-a-meme-token--two-paths)
-  - [Native factory denom (tokenfactory) — recommended](#native-factory-denom-tokenfactory--recommended)
-  - [cw20 contract token — portable alternative](#cw20-contract-token--portable-alternative)
+- [Ecosystem at a glance](#ecosystem-at-a-glance)
+- [Huahuaswap: the native DEX](#huahuaswap-the-native-dex)
+- [The Huahuaswap launchpad](#the-huahuaswap-launchpad)
+- [Launch a meme token: two paths](#launch-a-meme-token-two-paths)
+  - [Native factory denom (tokenfactory)](#native-factory-denom-tokenfactory)
+  - [cw20 contract token: portable alternative](#cw20-contract-token-portable-alternative)
+- [Burning HUAHUA and tokens](#burning-huahua-and-tokens)
 - [NFTs (cw721)](#nfts-cw721)
-- [Other DeFi venues](#other-defi-venues)
+- [Chihuahua reference contracts (Chiwawasm)](#chihuahua-reference-contracts-chiwawasm)
+- [Other venues](#other-venues)
 
 Everything here builds on the CosmWasm and CosmJS mechanics in
-[smart-contracts.md](smart-contracts.md) and [dapp-dev.md](dapp-dev.md) — a token is
-just a contract, a DEX swap is just an `execute`, an NFT is just another contract.
+[smart-contracts.md](smart-contracts.md) and [dapp-dev.md](dapp-dev.md).
 
-> **Addresses drift — don't hardcode them blind.** Ecosystem contract addresses
-> (DEX router, pool factory, specific pools) change as projects redeploy. Always
-> resolve the *current* address from the app's site, by querying the chain
-> (`chihuahuad query wasm list-contract-by-code <id>`), and checking it on
+> **Addresses drift: don't hardcode them blind.** Ecosystem contract addresses change
+> as projects redeploy. Resolve the *current* address from the app, by querying the
+> chain (`chihuahuad query wasm list-contract-by-code <id>`), and by checking it on
 > [explorer.chihuahua.wtf](https://explorer.chihuahua.wtf) (`/account/<address>` shows
-> the contract label) — rather than pasting a stale address from a tutorial. The patterns below are stable; the addresses are not.
+> the contract label). The addresses below were checked on 2026-11-10.
 
-## Huahuaswap — the native DEX
+## Ecosystem at a glance
 
-[huahuaswap.com](https://huahuaswap.com/pools) is Chihuahua's native DEX, built for
-meme tokens and liquidity pools. It's a CosmWasm AMM, so you interact with it exactly
-like any other contract.
+| App | What it is |
+|-----|------------|
+| [Huahuaswap](https://swap.chihuahua.wtf) | Native DEX (x/liquidity pools against HUAHUA) and memecoin launchpad. `huahuaswap.com` redirects here. |
+| [Huahua P2P](https://p2p.chihuahua.wtf) | Peer-to-peer escrow exchange between any two listed tokens, with an agent API paid through x402; see [p2p-agents.md](p2p-agents.md) |
+| [Dogtags](https://tags.chihuahua.wtf) | Name service: a readable name for a `chihuahua1...` address |
+| [Huahua Prediction](https://predict.chihuahua.wtf) | BTC and ETH up-or-down rounds, in USDC |
+| [Woof Morning](https://wm.chihuahua.wtf) | Daily "woof" streak game with soulbound badges and seasonal NFT pups |
+| [Burn tracker](https://burn.chihuahua.wtf) | HUAHUA burned forever |
+| [Huallet](https://github.com/ChihuahuaChain/huallet) | Chihuahua's own wallet: Chrome, Firefox and Android; `window.huallet` speaks the Keplr API |
+| [explorer.chihuahua.wtf](https://explorer.chihuahua.wtf) | The chain's own block explorer |
 
-**Find the current contracts.** Get the router/factory and pool addresses from the
-Huahuaswap app (its frontend config) or by listing contracts under its code IDs.
-Then a swap is a `wasm execute` against the pool/router with a swap message, and
-providing liquidity is an `execute` that deposits both sides of the pair.
-
-Typical swap shape (the exact message schema is defined by Huahuaswap's contracts —
-query the pool's `{ "pair": {} }` / config to confirm field names before building):
+**Dogtags** (mainnet contract `chihuahua1zqmhmz9weyrngl3v8gfprcuygv6fsgw9j9fwu42syegeryqyz2yshrznzx`)
+resolves both ways, which is handy to show names instead of addresses:
 
 ```bash
-# query a pool's state / config to learn its message schema and reserves
-chihuahuad query wasm contract-state smart <POOL_CONTRACT> '{"pool":{}}' \
-  --node "$NODE" --output json | jq
-
-# swap uhuahua -> token via the pool (schema varies; this is the common terraswap/
-# wasmswap shape). Native funds go in --amount; the message names the offer asset.
-chihuahuad tx wasm execute <POOL_CONTRACT> \
-  '{"swap":{"offer_asset":{"info":{"native_token":{"denom":"uhuahua"}},"amount":"1000000"},"max_spread":"0.05"}}' \
-  --amount 1000000uhuahua --from "$KEY" $TXFLAGS
+chihuahuad query wasm contract-state smart <DOGTAGS> '{"resolve":{"alias":"burn"}}' --node "$NODE"
+chihuahuad query wasm contract-state smart <DOGTAGS> '{"reverse":{"address":"chihuahua1..."}}' --node "$NODE"
 ```
 
-From a dApp, this is `SigningCosmWasmClient.execute(...)` with the same message — see
-[dapp-dev.md](dapp-dev.md#talk-to-a-cosmwasm-contract). Always set a slippage bound
-(`max_spread`) and show the user the expected output from a pre-swap simulation
-query; thin pools move on small trades.
+## Huahuaswap: the native DEX
 
-## Launch a meme token — two paths
+[swap.chihuahua.wtf](https://swap.chihuahua.wtf) is Chihuahua's DEX. Its pools are the
+chain's own **`x/liquidity` module** (the Gravity DEX design, maintained in the
+chain repo), not a CosmWasm contract. Each pool pairs a token with `uhuahua`; prices
+come from the ratio of the reserves.
 
-Chihuahua gives you two ways to mint a fungible token. On Chihuahua, prefer the
-**native factory denom** (the chain has the `x/tokenfactory` module) — there's no
-contract to deploy, maintain, or migrate. Use **cw20** only when you specifically need
-contract-level logic or cross-chain portability of the exact same standard.
-
-### Native factory denom (tokenfactory) — recommended
-
-Chihuahua ships the `x/tokenfactory` module, so any account can mint a **native**
-denom of the form `factory/<your-address>/<subdenom>` with no contract at all. The
-creator becomes the admin (can mint/burn/change admin). This is the cleanest way to
-launch a meme token on Chihuahua:
+| Parameter | Value (2026-11-10) |
+|-----------|--------------------|
+| Swap fee | 0.5% (`swap_fee_rate` 0.005) |
+| Max order | 10% of the pool's reserve (`max_order_amount_ratio`) |
+| Batch | every block (`unit_batch_height` 1) |
 
 ```bash
-# 1. create the denom (subdenom is your ticker, lowercased). Costs a small fee.
-chihuahuad tx tokenfactory create-denom woof --from "$KEY" $TXFLAGS
-# -> your full denom is now: factory/<your-chihuahua-address>/woof
+# pools: id, the two reserve denoms, the reserve account (read its balances for the price)
+curl -s "https://api.chihuahua.wtf/cosmos/liquidity/v1beta1/pools?pagination.limit=200" | jq '.pools[] | {id, reserve_coin_denoms, reserve_account_address}'
+curl -s https://api.chihuahua.wtf/cosmos/liquidity/v1beta1/params | jq
+```
 
+Two ways to swap, both with a limit price:
+
+```bash
+# immediate swap against the pool
+chihuahuad tx liquidity direct-swap <POOL_ID> 1 1000000uhuahua <DEMAND_DENOM> <ORDER_PRICE> --from "$KEY" $TXFLAGS
+
+# batch swap: executed at the end of the block at one price for every order in the batch
+# (front-running resistant); reserves half the swap fee up front
+chihuahuad tx liquidity swap <POOL_ID> 1 1000000uhuahua <DEMAND_DENOM> <ORDER_PRICE> 0.005 --from "$KEY" $TXFLAGS
+```
+
+`ORDER_PRICE` is the exchange ratio X/Y, where X and Y are the two reserve coins
+**sorted alphabetically by denom** (`factory/...` sorts before `uhuahua`). Read the
+reserves first and set a price with a slippage bound you accept; the swap fills only
+at that price or better. From code, the messages are
+`/liquidity.v1beta1.MsgDirectSwap` and `/liquidity.v1beta1.MsgSwapWithinBatch` (proto
+package `liquidity.v1beta1` in the chain repo; they are not in `cosmjs-types`, so
+register them yourself or send them through the CLI). Pools are thin: always quote
+from the reserves and show the user the expected output.
+
+## The Huahuaswap launchpad
+
+Memecoins launched on Huahuaswap go through the `huahua-factory` CosmWasm contract
+`chihuahua1sj9verkuk8aa9jrngnpwup6zjht4vwngjlpemnt9w38ccp0qnlcswvsuzc`: it creates a
+tokenfactory denom `factory/<factory>/<subdenom>`, sells it along a **bonding curve**,
+and when the curve completes ("graduates") the token moves to a Huahuaswap pool.
+Create and buy through the app; read the state from the contract:
+
+```bash
+FACTORY=chihuahua1sj9verkuk8aa9jrngnpwup6zjht4vwngjlpemnt9w38ccp0qnlcswvsuzc
+# every launched token, 50 per page (pass "start_after":"<subdenom>" for the next page)
+chihuahuad query wasm contract-state smart $FACTORY '{"get_tokens_with_pagination":{"limit":50}}' --node "$NODE" --output json \
+  | jq '.data.tokens[] | {subdenom, name, denom, completed}'
+# one token
+chihuahuad query wasm contract-state smart $FACTORY '{"token_info":{"subdenom":"beer"}}' --node "$NODE"
+```
+
+`completed: true` means the bonding curve is done. Some apps treat graduated tokens
+specially (Huahua P2P lists them for free).
+
+## Launch a meme token: two paths
+
+On Chihuahua, prefer the **native factory denom** (`x/tokenfactory`): there's no
+contract to deploy, maintain or migrate. Use **cw20** only when you need
+contract-level logic or the exact cw20 standard. (Or launch through the
+[launchpad](#the-huahuaswap-launchpad) to get a bonding curve and a pool.)
+
+### Native factory denom (tokenfactory)
+
+Any account can create a **native** denom `factory/<your-address>/<subdenom>`. The
+creator becomes its admin. Creating one costs **10 HUAHUA** (`denom_creation_fee`)
+plus gas.
+
+```bash
+# 1. create the denom (subdenom is your ticker, lowercased)
+chihuahuad tx tokenfactory create-denom woof --from "$KEY" $TXFLAGS
 DENOM_FULL="factory/$(chihuahuad keys show $KEY -a)/woof"
 
-# 2. mint supply to yourself (amount is in the denom's base units)
+# 2. mint supply to yourself (base units of the denom), or to someone else
 chihuahuad tx tokenfactory mint "1000000000000${DENOM_FULL}" --from "$KEY" $TXFLAGS
+chihuahuad tx tokenfactory mint-to chihuahua1... "1000000${DENOM_FULL}" --from "$KEY" $TXFLAGS
 
-# 3. (optional) set human metadata: display symbol, exponent, description
-#    via tx tokenfactory set-denom-metadata or a bank metadata tx — check
-#    `chihuahuad tx tokenfactory --help` for the exact subcommand on this binary.
+# 3. human metadata: ticker, description, exponent (6 like HUAHUA)
+chihuahuad tx tokenfactory modify-metadata "$DENOM_FULL" WOOF "The goodest boy token" 6 --from "$KEY" $TXFLAGS
 
-# 4. (optional) renounce admin so supply can never change again — meme-credibility:
+# 4. (optional) renounce admin so supply and balances can never be touched again:
+#    hand it to the all-zero address, which no key controls
 chihuahuad tx tokenfactory change-admin "$DENOM_FULL" \
-  chihuahua1zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzdkqkz9 --from "$KEY" $TXFLAGS
+  chihuahua1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqskd3xl --from "$KEY" $TXFLAGS
 ```
 
-If you want to *keep* mint control but not trust a single hot key with it, point
-`change-admin` at a **multisig** address instead of burning it — see
-[network.md → Multisig accounts](network.md#multisig-accounts). That's the middle
-ground between "one key can inflate forever" and "supply frozen forever."
+> **A denom admin is powerful on Chihuahua.** Besides `mint` and `burn`, the admin can
+> `force-transfer` the token out of any account and `burn-from` any account,
+> including a contract's escrow. That's why holders look at who the admin is:
+> `chihuahuad query tokenfactory denom-authority-metadata "$DENOM_FULL"`. Renounce
+> it (step 4) for a fixed-supply meme token, or point it at a **multisig** if you need
+> to keep mint control without trusting one hot key; see
+> [network.md → Multisig accounts](network.md#multisig-accounts).
 
-(Exact subcommand names can vary slightly by binary version — run
-`chihuahuad tx tokenfactory --help` to confirm `create-denom`/`mint`/`burn`/
-`change-admin`/`set-denom-metadata`.) Because it's a native bank denom, it works
-everywhere `uhuahua` does: `bank send`, balances, Huahuaswap pools, IBC.
+Run `chihuahuad tx tokenfactory --help` for the full list (it also has
+`create-stakedrop`, which lets a token's creator drop it to stakers between two block heights). Because
+it's a native bank denom, it works everywhere `uhuahua` does: `bank send`, balances,
+Huahuaswap pools, IBC.
 
-### cw20 contract token — portable alternative
+### cw20 contract token: portable alternative
 
-The portable CosmWasm path is the **cw20** standard contract. Upload the standard
-`cw20-base` wasm once (or reuse an existing code ID on-chain), then instantiate:
+Upload the standard `cw20-base` wasm once (or reuse an existing code ID on chain),
+then instantiate:
 
 ```bash
 chihuahuad tx wasm instantiate <CW20_CODE_ID> '{
@@ -114,18 +166,32 @@ chihuahuad tx wasm instantiate <CW20_CODE_ID> '{
    --from "$KEY" $TXFLAGS
 ```
 
-Either way, to list on Huahuaswap create a `WOOF`/`uhuahua` pair through the DEX's
-factory contract and seed it with liquidity; after that anyone can trade it.
-(`cw20-base` and `cw721-base` wasm come from the CosmWasm `cw-plus`/`cw-nfts` repos;
-build them with the optimizer like any contract — see
-[smart-contracts.md](smart-contracts.md#step-2--compile--optimize-reproducible-build).)
+Note that Huahuaswap pools (`x/liquidity`) take native denoms, so a cw20 token
+cannot be pooled there directly; that's another reason to prefer tokenfactory.
+(`cw20-base` and `cw721-base` come from the CosmWasm `cw-plus`/`cw-nfts` repos; build
+them with the optimizer like any contract; see
+[smart-contracts.md](smart-contracts.md#step-2-compile--optimize-reproducible-build).)
+
+## Burning HUAHUA and tokens
+
+Send HUAHUA or any tokenfactory denom to the x/feeburn module account
+`chihuahua1d99pujdz48wkmn3uesfxnrctn44uuf5cuw5xuu` (Dogtags alias `burn`). It is
+burned at the end of the block and added to the chain's public burned total
+(`/chihuahua/feeburn/total_burned`, shown on [burn.chihuahua.wtf](https://burn.chihuahua.wtf)):
+
+```bash
+chihuahuad tx bank send "$KEY" chihuahua1d99pujdz48wkmn3uesfxnrctn44uuf5cuw5xuu 1000000000uhuahua $TXFLAGS
+```
+
+IBC vouchers sent there are **not** burned (they stay untouched), so never send an
+`ibc/...` token to it. The token admin can also burn its own tokenfactory denom with
+`tx tokenfactory burn`.
 
 ## NFTs (cw721)
 
-NFTs run on Chihuahua as CosmWasm **cw721** contracts (the Cosmos analog of ERC-721) —
-the chain's CosmWasm support means a standard NFT contract deploys and runs here like
-on any wasm chain. A collection is one contract; each token is an entry inside it.
-Instantiate a collection from the standard `cw721-base` code:
+NFTs run on Chihuahua as CosmWasm **cw721** contracts. A collection is one contract;
+each token is an entry inside it. Instantiate a collection from the standard
+`cw721-base` code:
 
 ```bash
 chihuahuad tx wasm instantiate <CW721_CODE_ID> '{
@@ -144,37 +210,32 @@ chihuahuad query wasm contract-state smart <COLLECTION_CONTRACT> \
   '{"owner_of":{"token_id":"1"}}' --node "$NODE" --output json | jq
 ```
 
-Host metadata/images on IPFS and put the `ipfs://` URI in `token_uri`. From a dApp,
-mint and query through `SigningCosmWasmClient` / `CosmWasmClient` exactly as in
-[dapp-dev.md](dapp-dev.md).
+Host metadata and images on IPFS and put the `ipfs://` URI in `token_uri`. The
+chain's own `x/nft` module was removed in v10: cw721 is the NFT standard here.
 
 ## Chihuahua reference contracts (Chiwawasm)
 
-The chain team publishes its own CosmWasm contracts in
-[ChihuahuaChain/Chiwawasm](https://github.com/ChihuahuaChain/Chiwawasm) — the best
-Chihuahua-specific reference for the patterns this page describes, because it's
-real code written for this chain rather than a generic template:
+The chain team publishes example CosmWasm contracts in
+[ChihuahuaChain/Chiwawasm](https://github.com/ChihuahuaChain/Chiwawasm):
 
 | Contract | What it does | Study it for |
 |----------|--------------|--------------|
-| `token-swap` | Constant-product (AMM) pool that trades any cw20 or IBC token quoted against the base **HUAHUA** | The DEX/pool message shape — how a swap, a pool, and liquidity are modeled against `uhuahua`. This is the on-chain analog of the Huahuaswap swap above. |
-| `tokens-manager` | Lets users pay a `token_creation_fee` to mint **cw20** tokens managed by the contract | A fee-gated token-launch pattern, if you want minting through a contract rather than the native tokenfactory path. |
-| `burn-contract` | Burns token balances | A minimal, readable contract to learn the `instantiate`/`execute`/`query` shape end to end. |
+| `token-swap` | Constant-product (AMM) pool that trades any cw20 or IBC token quoted against **HUAHUA** | How a swap, a pool and liquidity are modeled as a contract against `uhuahua` |
+| `tokens-manager` | Lets users pay a `token_creation_fee` to mint **cw20** tokens managed by the contract | A fee-gated token-launch pattern |
+| `burn-contract` | Burns token balances | A minimal, readable contract to learn the `instantiate`/`execute`/`query` shape end to end |
 
-> **Treat it as a reference to study, not deploy-as-is.** The repo is lightly
-> maintained and its tooling is dated: it pins `cosmwasm/rust-optimizer:0.12.6` and
-> its CLI examples use the template `stake` denom. When you adapt anything from it,
-> build with the **current** optimizer (`cosmwasm/optimizer:0.16.0`, see
-> [smart-contracts.md](smart-contracts.md#step-2--compile--optimize-reproducible-build))
-> and use **`uhuahua`**, not `stake`. Read the message schemas directly from each
-> contract's `msg.rs` — that's the source of truth for its execute/query JSON.
+> **Study it, don't deploy it as-is.** The repo is lightly maintained and its tooling
+> is dated: it pins `cosmwasm/rust-optimizer:0.12.6` and its CLI examples use the
+> template `stake` denom. Build anything you adapt with the current optimizer
+> (`cosmwasm/optimizer:0.17.0`) and use **`uhuahua`**. Read the message schemas from
+> each contract's `msg.rs`.
 
-## Other DeFi venues
+## Other venues
 
-- **Osmosis** — the deepest cross-chain HUAHUA market (HUAHUA/OSMO), reached via IBC.
-  See [skip-go.md → Acquiring HUAHUA](skip-go.md#acquiring-huahua-funding-a-treasury-or-faucet)
-  for funding an account with HUAHUA from another chain.
-- **Sienna (Secret)** — `sHUAHUA` exists as a privacy-wrapped form on Secret Network.
+- **Osmosis** is the deepest cross-chain HUAHUA market (HUAHUA/OSMO) and, as of
+  2026-11-10, Chihuahua's only live IBC path. See
+  [skip-go.md](skip-go.md#acquiring-huahua-funding-a-treasury-or-faucet) to fund an
+  account with HUAHUA from another chain.
 
-These are independent projects; confirm a venue is active and pull its current
-contract addresses from its own app before integrating.
+Confirm a venue is active and pull its current contract addresses from its own app
+before integrating.

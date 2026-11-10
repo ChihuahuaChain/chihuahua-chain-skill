@@ -18,8 +18,9 @@ export WS="${WS:-wss://rpc.chihuahua.wtf/websocket}"
 export REST="${REST:-https://api.chihuahua.wtf}"
 export GRPC="${GRPC:-grpc.chihuahua.wtf:443}"
 
-export GAS_PRICES="${GAS_PRICES:-1250uhuahua}"
-export GAS_ADJUSTMENT="${GAS_ADJUSTMENT:-1.4}"
+# 500uhuahua is the consensus minimum since v10.0.1; simulations underestimate, so pad by 1.6.
+export GAS_PRICES="${GAS_PRICES:-500uhuahua}"
+export GAS_ADJUSTMENT="${GAS_ADJUSTMENT:-1.6}"
 
 # Standard tx flags for state-changing commands.
 export TXFLAGS="--chain-id $CHAIN_ID --node $RPC --gas auto --gas-adjustment $GAS_ADJUSTMENT --gas-prices $GAS_PRICES -y -b sync"
@@ -44,10 +45,12 @@ huahua() {
   if [ "${1:-}" = "woof" ]; then
     local tips=(
       "Amounts are in uhuahua. 1 HUAHUA = 1000000 uhuahua. Don't drop a zero."
-      "insufficient fee? Bump --gas-prices toward 2000uhuahua. The chain default is NOT 0.025."
-      "Test contracts on a local devnet first. Mainnet HUAHUA is real money."
+      "insufficient fee? The floor is 500uhuahua per gas, in consensus. NOT 0.025, NOT 100."
+      "Out of gas still costs the fee. Keep --gas-adjustment 1.6."
+      "Test on woofnet-6 first: free HUAHUA at testnet-faucet.chihuahua.wtf."
+      "Burn HUAHUA by sending it to chihuahua1d99pujdz48wkmn3uesfxnrctn44uuf5cuw5xuu."
       "Public RPCs rotate. If a node times out, it's dead, not your code. Use a fallback."
-      "Check 'chihuahuad query wasm params' before store-code. Upload may be permissioned."
+      "Only the Osmosis IBC channel is live: channel-7 <-> channel-113."
       "A cross-chain transfer isn't done until the destination balance shows up. Track it."
     )
     local tip="${tips[$((RANDOM % ${#tips[@]}))]}"

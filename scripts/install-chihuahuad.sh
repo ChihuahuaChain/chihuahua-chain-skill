@@ -3,7 +3,9 @@
 #
 #   ./install-chihuahuad.sh [VERSION]
 #
-# VERSION defaults to the latest known release (v9.0.7, builds with Go 1.23.9).
+# VERSION defaults to the latest known release (v10.0.1, builds with Go 1.26.5).
+# On Linux you can skip the build: the release page ships static amd64 and arm64
+# binaries with their sha256.
 # ALWAYS confirm the current consensus version against the network before running a
 # node: https://github.com/ChihuahuaChain/chihuahua/releases
 # A node on the wrong version can halt at an upgrade height. For CLI-only use
@@ -11,12 +13,12 @@
 # critical, but staying current avoids proto/format drift.
 set -euo pipefail
 
-VERSION="${1:-v9.0.7}"
+VERSION="${1:-v10.0.1}"
 REPO="https://github.com/ChihuahuaChain/chihuahua"
 SRC_DIR="${SRC_DIR:-$HOME/chihuahua-src}"
 
 command -v go >/dev/null 2>&1 || {
-  echo "Go is required (v9.0.7 needs Go 1.23.9). Install from https://go.dev/dl/ and re-run." >&2
+  echo "Go is required (v10.0.1 needs Go 1.26.5). Install from https://go.dev/dl/ and re-run." >&2
   exit 1
 }
 command -v git >/dev/null 2>&1 || { echo "git is required." >&2; exit 1; }
