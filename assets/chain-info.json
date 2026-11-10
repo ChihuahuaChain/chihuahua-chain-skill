@@ -26,7 +26,7 @@
       "coinMinimalDenom": "uhuahua",
       "coinDecimals": 6,
       "coinGeckoId": "chihuahua-token",
-      "gasPriceStep": { "low": 500, "average": 1250, "high": 2000 }
+      "gasPriceStep": { "low": 500, "average": 750, "high": 1000 }
     }
   ],
   "stakeCurrency": {
